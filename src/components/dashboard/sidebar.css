@@ -1,0 +1,25 @@
+.dashboard-sidebar {
+    width: 200px;
+    background-color: #f0f0f0;
+    padding: 20px;
+  }
+  
+  .dashboard-sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .dashboard-sidebar li {
+    margin: 15px 0;
+  }
+  
+  .dashboard-sidebar a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  .dashboard-sidebar a:hover {
+    color: #2e8b57;
+  }
+  

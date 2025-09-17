@@ -1,0 +1,12 @@
+.dashboard-content {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  @media (max-width: 1024px) {
+    .dashboard-content {
+      flex-direction: column;
+    }
+  }
+  

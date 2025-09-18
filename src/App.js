@@ -10,9 +10,12 @@ import Contact from "./components/contact";
 // Auth pages
 import Login from "./pages/login";
 import Signup from "./pages/signup";
+import CitizenPage from "./pages/citizen";
+import MuniciplePage from "./pages/municiple";
+
 
 // Dashboard page
-import DashboardPage from "./pages/dashboard";
+// import DashboardPage from "./pages/dashboard";
 
 function App() {
   return (
@@ -36,7 +39,9 @@ function App() {
         <Route path="/signup" element={<Signup />} />
 
         {/* Citizen Dashboard */}
-        <Route path="/dashboard" element={<DashboardPage />} />
+        {/* <Route path="/dashboard" element={<DashboardPage />} /> */}
+        <Route path="/dashboard" element={<CitizenPage />} /> 
+        <Route path="/municipal-dashboard" element={<MuniciplePage/>} /> 
       </Routes>
     </Router>
   );

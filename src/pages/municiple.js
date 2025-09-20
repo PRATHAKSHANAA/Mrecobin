@@ -1,863 +1,567 @@
 import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { Leaf, Recycle, AlertTriangle, TrendingUp, Users, MapPin, Calendar, Bell, LogOut, BarChart3, Trash2, Route, AlertCircle, FileText } from "lucide-react";
 import "leaflet/dist/leaflet.css";
-import L from 'leaflet';
+import L from "leaflet";
+import { 
+  BarChart3, 
+  Recycle, 
+  Route, 
+  AlertTriangle, 
+  FileText, 
+  LogOut, 
+  Bell,
+  TrendingUp,
+  Users,
+  Truck,
+  Leaf,
+  Award,
+  Calendar,
+  Activity
+} from "lucide-react";
 
-// Fix for default markers in react-leaflet
+// Fix default marker icon issue in Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
-// Professional Environmental Theme Styles
 const styles = {
   dashboardContainer: {
     display: "flex",
     minHeight: "100vh",
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-    backgroundColor: "#f8fffe",
-    color: "#0f172a",
+    backgroundColor: "#f8fafc",
   },
   sidebar: {
     width: "280px",
-    background: "linear-gradient(135deg, #065f46 0%, #047857 100%)",
-    color: "#ffffff",
+    background: "linear-gradient(135deg, #047857 0%, #059669 100%)",
+    color: "#fff",
     padding: "2rem 1.5rem",
+    flexShrink: 0,
+    position: "fixed",
+    height: "100vh",
     display: "flex",
     flexDirection: "column",
-    boxShadow: "4px 0 20px rgba(0, 0, 0, 0.1)",
+    boxShadow: "4px 0 20px rgba(0,0,0,0.1)",
   },
   sidebarHeader: {
+    fontSize: "1.75rem",
+    fontWeight: "800",
+    marginBottom: "2.5rem",
     display: "flex",
     alignItems: "center",
-    gap: "0.75rem",
-    fontSize: "1.5rem",
-    fontWeight: "700",
-    marginBottom: "3rem",
-    color: "#ffffff",
-  },
-  sidebarNav: {
-    listStyle: "none",
-    padding: 0,
-    margin: 0,
+    gap: "0.5rem",
+    cursor: "pointer",
   },
   sidebarItem: {
     display: "flex",
     alignItems: "center",
     gap: "0.75rem",
-    padding: "1rem 1.25rem",
+    padding: "0.875rem 1.25rem",
+    borderRadius: "10px",
     cursor: "pointer",
-    transition: "all 0.3s ease",
-    borderRadius: "12px",
     marginBottom: "0.5rem",
-    fontSize: "0.95rem",
+    transition: "all 0.2s ease",
     fontWeight: "500",
-    position: "relative",
   },
   sidebarItemActive: {
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
-    backdropFilter: "blur(10px)",
+    backgroundColor: "rgba(255,255,255,0.25)",
+    transform: "translateX(4px)",
   },
-  dashboardMain: {
+  mainContent: {
+    marginLeft: "280px",
+    padding: "2.5rem",
     flex: 1,
-    padding: "2rem",
-    display: "flex",
-    flexDirection: "column",
-    gap: "2rem",
-    backgroundColor: "#f8fffe",
+    backgroundColor: "#f8fafc",
   },
   navbar: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    background: "#ffffff",
+    marginBottom: "2rem",
+    backgroundColor: "#ffffff",
     padding: "1.5rem 2rem",
     borderRadius: "16px",
-    boxShadow: "0 4px 24px rgba(0, 0, 0, 0.06)",
-    border: "1px solid rgba(6, 95, 70, 0.1)",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
   },
-  navTitle: {
-    fontSize: "1.5rem",
-    fontWeight: "600",
-    color: "#065f46",
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-  },
-  navRight: {
-    display: "flex",
-    alignItems: "center",
-    gap: "1rem",
-  },
-  userInfo: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    color: "#475569",
-    fontSize: "0.95rem",
-  },
-  navButton: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    padding: "0.75rem 1.5rem",
-    border: "none",
-    borderRadius: "10px",
-    backgroundColor: "#dc2626",
-    color: "#ffffff",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    fontSize: "0.9rem",
-    fontWeight: "500",
-  },
-  metricsGrid: {
+  statsGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "1.5rem",
-  },
-  metricCard: {
-    background: "#ffffff",
-    padding: "2rem",
-    borderRadius: "20px",
-    boxShadow: "0 4px 24px rgba(0, 0, 0, 0.06)",
-    border: "1px solid rgba(6, 95, 70, 0.1)",
-    transition: "all 0.3s ease",
-    position: "relative",
-    overflow: "hidden",
-  },
-  metricCardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "1rem",
-  },
-  metricIcon: {
-    padding: "0.75rem",
-    borderRadius: "12px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  metricValue: {
-    fontSize: "2.5rem",
-    fontWeight: "700",
-    color: "#065f46",
-    lineHeight: "1",
-    marginBottom: "0.5rem",
-  },
-  metricLabel: {
-    fontSize: "0.95rem",
-    color: "#64748b",
-    fontWeight: "500",
-  },
-  metricTrend: {
-    fontSize: "0.85rem",
-    fontWeight: "500",
-    display: "flex",
-    alignItems: "center",
-    gap: "0.25rem",
-    marginTop: "0.5rem",
-  },
-  contentGrid: {
-    display: "grid",
-    gridTemplateColumns: "2fr 1fr",
     gap: "2rem",
+    marginBottom: "2.5rem",
   },
-  mapSection: {
-    background: "#ffffff",
+  statCard: {
+    backgroundColor: "#ffffff",
     padding: "2rem",
-    borderRadius: "20px",
-    boxShadow: "0 4px 24px rgba(0, 0, 0, 0.06)",
-    border: "1px solid rgba(6, 95, 70, 0.1)",
-  },
-  sectionHeader: {
-    fontSize: "1.25rem",
-    fontWeight: "600",
-    color: "#065f46",
-    marginBottom: "1.5rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-  },
-  alertsSection: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2rem",
-  },
-  alertsCard: {
-    background: "#ffffff",
-    padding: "2rem",
-    borderRadius: "20px",
-    boxShadow: "0 4px 24px rgba(0, 0, 0, 0.06)",
-    border: "1px solid rgba(6, 95, 70, 0.1)",
-  },
-  alertItem: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "1rem",
-    borderRadius: "12px",
-    marginBottom: "1rem",
-    transition: "all 0.3s ease",
-    border: "1px solid #f1f5f9",
-  },
-  alertContent: {
-    display: "flex",
-    alignItems: "center",
-    gap: "1rem",
-  },
-  alertIcon: {
-    padding: "0.5rem",
-    borderRadius: "8px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  alertText: {
-    fontSize: "0.9rem",
-    color: "#334155",
-    fontWeight: "500",
-  },
-  alertBadge: {
-    padding: "0.25rem 0.75rem",
-    borderRadius: "20px",
-    fontSize: "0.8rem",
-    fontWeight: "600",
-    color: "#ffffff",
-  },
-  actionButton: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    padding: "0.75rem 1.5rem",
-    border: "none",
-    borderRadius: "12px",
-    backgroundColor: "#059669",
-    color: "#ffffff",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    fontSize: "0.9rem",
-    fontWeight: "500",
-    width: "100%",
-    justifyContent: "center",
-    marginTop: "1rem",
-  },
-  mapStyle: {
-    height: "450px",
     borderRadius: "16px",
-    border: "2px solid rgba(6, 95, 70, 0.1)",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+    transition: "all 0.3s ease",
+    cursor: "pointer",
   },
-  notificationBadge: {
-    position: "absolute",
-    top: "8px",
-    right: "8px",
-    backgroundColor: "#dc2626",
-    color: "#ffffff",
-    borderRadius: "50%",
-    width: "20px",
-    height: "20px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "0.7rem",
-    fontWeight: "600",
+  statCardHover: {
+    transform: "translateY(-4px)",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+  },
+  mapContainer: {
+    height: "600px",
+    borderRadius: "16px",
+    overflow: "hidden",
+    backgroundColor: "#ffffff",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+  },
+  easterEggModal: {
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    backgroundColor: "#ffffff",
+    padding: "3rem",
+    borderRadius: "20px",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+    zIndex: 1000,
+    textAlign: "center",
+    maxWidth: "500px",
+  },
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0,0,0,0.7)",
+    zIndex: 999,
+  },
+  konamiIndicator: {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    backgroundColor: "#047857",
+    color: "white",
+    padding: "8px 12px",
+    borderRadius: "20px",
+    fontSize: "12px",
+    opacity: 0.7,
   },
 };
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
-  const [notifications, setNotifications] = useState(3);
+  const [notifications] = useState(3);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [clickCount, setClickCount] = useState(0);
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
+  const [easterEggType, setEasterEggType] = useState("");
+  const [konamiSequence, setKonamiSequence] = useState([]);
+  const [showKonamiIndicator, setShowKonamiIndicator] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState(null);
 
+  // Konami Code sequence
+  const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+
+  // Update clock every second
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Sample data for different sections
-  const [binsData] = useState([
-    { id: "A247", location: "Marina Beach", fillLevel: 95, status: "Critical", lat: 13.0827, lng: 80.2707 },
-    { id: "B156", location: "T. Nagar", fillLevel: 72, status: "Normal", lat: 13.0878, lng: 80.2785 },
-    { id: "C089", location: "Adyar", fillLevel: 88, status: "High", lat: 13.0569, lng: 80.2462 },
-    { id: "D234", location: "Velachery", fillLevel: 45, status: "Normal", lat: 12.9756, lng: 80.2207 },
-    { id: "E178", location: "Anna Nagar", fillLevel: 91, status: "High", lat: 13.0850, lng: 80.2101 },
-  ]);
+  // Konami code listener
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      const newSequence = [...konamiSequence, event.code].slice(-10);
+      setKonamiSequence(newSequence);
+      
+      if (JSON.stringify(newSequence) === JSON.stringify(konamiCode)) {
+        triggerEasterEgg("konami");
+        setKonamiSequence([]);
+      }
+    };
 
-  const [routesData] = useState([
-    { id: "R001", name: "Central Chennai Route", bins: 15, status: "Active", efficiency: "92%" },
-    { id: "R002", name: "South Chennai Route", bins: 12, status: "Delayed", efficiency: "78%" },
-    { id: "R003", name: "North Chennai Route", bins: 18, status: "Active", efficiency: "89%" },
-    { id: "R004", name: "West Chennai Route", bins: 14, status: "Maintenance", efficiency: "65%" },
-  ]);
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [konamiSequence]);
+
+  // Show Konami indicator when partially entered
+  useEffect(() => {
+    const partialMatch = konamiCode.slice(0, konamiSequence.length).every((key, index) => key === konamiSequence[index]);
+    setShowKonamiIndicator(partialMatch && konamiSequence.length > 3);
+  }, [konamiSequence]);
+
+  // Enhanced bin data with more realistic details
+  const DustbinIcon = new L.Icon({
+    iconUrl: "/greenbin.png", // remove default styles
+    iconSize: [60, 60],
+    iconAnchor: [15, 30],
+    popupAnchor: [0, -30],
+  });
+  
+  const binsData = [
+    { 
+      id: "A247", 
+      location: "outer ring road", 
+      fillLevel: 95, 
+      status: "Critical", 
+      lat: 13.086696450824595, 
+      lng: 80.23396748061305,
+      lastCollection: "2 days ago",
+      type: "Mixed Waste"
+    },
+    { 
+      id: "B156", 
+      location: "Mandapam Road", 
+      fillLevel: 72, 
+      status: "Normal", 
+      lat:13.085078102330876, lng:80.23040816062182,
+      lastCollection: "1 day ago",
+      type: "Recyclables"
+    },
+    { 
+      id: "C089", 
+      location: "Raji Street", 
+      fillLevel: 60, 
+      status: "Normal", 
+      lat:13.090782287550095, lng:80.23173070794498,
+      lastCollection: "6 hours ago",
+      type: "Organic Waste"
+    },
+    { 
+      id: "D123", 
+      location: "Palli Arasan Street", 
+      fillLevel: 88, 
+      status: "High", 
+      lat:13.087794089939603, lng:80.23123969445336,
+      lastCollection: "3 days ago",
+      type: "Mixed Waste"
+    },
+  ];
+
+  const stats = [
+    {
+      title: "Total Collections Today",
+      value: "247",
+      change: "+12%",
+      icon: Truck,
+      color: "#047857"
+    },
+    {
+      title: "Waste Recycled",
+      value: "1.2T",
+      change: "+8%",
+      icon: Recycle,
+      color: "#0ea5e9"
+    },
+    {
+      title: "Active Smart Bins",
+      value: "156",
+      change: "+3%",
+      icon: Activity,
+      color: "#8b5cf6"
+    },
+    {
+      title: "Carbon Saved",
+      value: "342kg",
+      change: "+15%",
+      icon: Leaf,
+      color: "#10b981"
+    }
+  ];
 
   const sidebarItems = [
-    { name: "Dashboard", icon: BarChart3 },
-    { name: "Smart Bins", icon: Trash2 },
-    { name: "Collection Routes", icon: Route },
-    { name: "Critical Alerts", icon: AlertCircle },
-    { name: "Environmental Reports", icon: FileText },
+    { label: "Dashboard", icon: BarChart3 },
+    { label: "Smart Bins", icon: Recycle },
+    { label: "Collection Routes", icon: Route },
+    { label: "Critical Alerts", icon: AlertTriangle },
+    { label: "Environmental Reports", icon: FileText },
+    { label: "Team Performance", icon: Users },
+    { label: "Analytics", icon: TrendingUp },
   ];
 
-  const metrics = [
-    {
-      label: "Active Smart Bins",
-      value: "1,247",
-      trend: "+12% this month",
-      positive: true,
-      icon: Trash2,
-      color: "#059669",
-      bgColor: "rgba(5, 150, 105, 0.1)",
-    },
-    {
-      label: "Average Fill Level",
-      value: "68%",
-      trend: "-5% vs last week",
-      positive: true,
-      icon: TrendingUp,
-      color: "#0891b2",
-      bgColor: "rgba(8, 145, 178, 0.1)",
-    },
-    {
-      label: "Critical Alerts",
-      value: "23",
-      trend: "Requires immediate attention",
-      positive: false,
-      icon: AlertTriangle,
-      color: "#dc2626",
-      bgColor: "rgba(220, 38, 38, 0.1)",
-    },
-    {
-      label: "CO₂ Saved",
-      value: "2.4T",
-      trend: "+18% this month",
-      positive: true,
-      icon: Leaf,
-      color: "#16a34a",
-      bgColor: "rgba(22, 163, 74, 0.1)",
-    },
-  ];
-
-  const alerts = [
-    { 
-      text: "Bin #A247 at Marina Beach - 95% capacity", 
-      level: "Critical", 
-      color: "#dc2626",
-      bgColor: "rgba(220, 38, 38, 0.1)",
-      time: "2 min ago" 
-    },
-    { 
-      text: "Collection route R3 experiencing delays", 
-      level: "High", 
-      color: "#ea580c",
-      bgColor: "rgba(234, 88, 12, 0.1)",
-      time: "15 min ago" 
-    },
-    { 
-      text: "Sensor malfunction at bin #B156", 
-      level: "Medium", 
-      color: "#ca8a04",
-      bgColor: "rgba(202, 138, 4, 0.1)",
-      time: "1 hour ago" 
-    },
-  ];
-
-  const handleLogout = () => {
-    alert("Logging out... Redirecting to login page");
+  const triggerEasterEgg = (type) => {
+    setEasterEggType(type);
+    setShowEasterEgg(true);
+    setTimeout(() => setShowEasterEgg(false), 4000);
   };
 
-  const handleSidebarClick = (item) => {
-    setActiveTab(item);
-    if (item === "Critical Alerts") {
-      setNotifications(0);
+  const handleLogoClick = () => {
+    setClickCount(prev => prev + 1);
+    if (clickCount === 6) { // 7 clicks total
+      triggerEasterEgg("logo");
+      setClickCount(0);
     }
   };
 
-  const handleActionClick = (action) => {
-    alert(`${action} functionality activated`);
+  const getEasterEggContent = () => {
+    switch (easterEggType) {
+      case "logo":
+        return {
+          title: "🎉 Developer Mode Activated!",
+          message: "Congratulations! You've discovered the secret developer portal. Fun fact: This dashboard processes over 50,000 waste collection events daily!",
+          emoji: "🚛♻️"
+        };
+      case "konami":
+        return {
+          title: "🏆 Konami Code Master!",
+          message: "Incredible! You've unlocked the ultimate waste management achievement. You're now officially a GreenWaste ninja! 🥷",
+          emoji: "⬆️⬆️⬇️⬇️⬅️➡️⬅️➡️🅱️🅰️"
+        };
+      case "midnight":
+        return {
+          title: "🌙 Night Owl Detective!",
+          message: "Working late? The night shift waste collectors salute you! Did you know 30% of our collections happen during night hours?",
+          emoji: "🌃🦉"
+        };
+      default:
+        return {
+          title: "🎊 Easter Egg Found!",
+          message: "You've discovered a hidden feature! Keep exploring for more surprises.",
+          emoji: "🥚✨"
+        };
+    }
   };
 
-  // Custom marker icons for different bin statuses
-  const createCustomIcon = (status) => {
-    const color = status === 'Critical' ? '#dc2626' : 
-                 status === 'High' ? '#ea580c' : '#16a34a';
-    
-    return L.divIcon({
-      html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
-      iconSize: [20, 20],
-      className: 'custom-marker'
-    });
-  };
+  // Check for midnight Easter egg
+  useEffect(() => {
+    if (currentTime.getHours() === 0 && currentTime.getMinutes() === 0 && currentTime.getSeconds() < 2) {
+      triggerEasterEgg("midnight");
+    }
+  }, [currentTime]);
 
-  // Component definitions
-  const Sidebar = () => (
-    <aside style={styles.sidebar}>
-      <div style={styles.sidebarHeader}>
-        <Recycle size={28} />
-        EcoSmart Municipal
-      </div>
-      <ul style={styles.sidebarNav}>
-        {sidebarItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <li
-              key={item.name}
-              style={{
-                ...styles.sidebarItem,
-                ...(activeTab === item.name ? styles.sidebarItemActive : {}),
-              }}
-              onClick={() => handleSidebarClick(item.name)}
-            >
-              <Icon size={20} />
-              {item.name}
-              {item.name === "Critical Alerts" && notifications > 0 && (
-                <span style={styles.notificationBadge}>{notifications}</span>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </aside>
-  );
-
-  const Navbar = () => (
-    <nav style={styles.navbar}>
-      <div style={styles.navTitle}>
-        <Leaf size={24} />
-        Environmental Waste Management System
-      </div>
-      <div style={styles.navRight}>
-        <div style={styles.userInfo}>
-          <Calendar size={16} />
-          {currentTime.toLocaleDateString()} | {currentTime.toLocaleTimeString()}
-        </div>
-        <div style={styles.userInfo}>
-          <Users size={16} />
-          Admin Portal
-        </div>
-        <button 
-          style={styles.navButton}
-          onClick={handleLogout}
-          onMouseEnter={(e) => e.target.style.backgroundColor = "#b91c1c"}
-          onMouseLeave={(e) => e.target.style.backgroundColor = "#dc2626"}
-        >
-          <LogOut size={16} />
-          Logout
-        </button>
-      </div>
-    </nav>
-  );
-
-  const MetricsGrid = () => (
-    <div style={styles.metricsGrid}>
-      {metrics.map((metric, index) => {
-        const Icon = metric.icon;
-        return (
-          <div 
-            key={index} 
-            style={styles.metricCard}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-4px)";
-              e.target.style.boxShadow = "0 8px 32px rgba(0, 0, 0, 0.12)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 4px 24px rgba(0, 0, 0, 0.06)";
-            }}
-          >
-            <div style={styles.metricCardHeader}>
-              <div>
-                <div style={styles.metricValue}>{metric.value}</div>
-                <div style={styles.metricLabel}>{metric.label}</div>
-                <div style={{
-                  ...styles.metricTrend,
-                  color: metric.positive ? "#16a34a" : "#dc2626"
-                }}>
-                  <TrendingUp size={14} />
-                  {metric.trend}
+  const renderContent = () => {
+    if (activeTab === "Dashboard" || activeTab === "Smart Bins") {
+      return (
+        <div>
+          {/* Stats Grid */}
+          <div style={styles.statsGrid}>
+            {stats.map((stat, index) => (
+              <div
+                key={index}
+                style={{
+                  ...styles.statCard,
+                  ...(hoveredCard === index ? styles.statCardHover : {})
+                }}
+                onMouseEnter={() => setHoveredCard(index)}
+                onMouseLeave={() => setHoveredCard(null)}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+                  <div>
+                    <h3 style={{ color: "#64748b", fontSize: "0.875rem", fontWeight: "600", margin: 0 }}>{stat.title}</h3>
+                    <p style={{ color: "#1e293b", fontSize: "2rem", fontWeight: "800", margin: "0.5rem 0" }}>{stat.value}</p>
+                    <span style={{ color: "#10b981", fontSize: "0.875rem", fontWeight: "600" }}>{stat.change} from last week</span>
+                  </div>
+                  <div style={{ 
+                    backgroundColor: `${stat.color}15`, 
+                    padding: "0.75rem", 
+                    borderRadius: "12px",
+                    color: stat.color 
+                  }}>
+                    <stat.icon size={24} />
+                  </div>
                 </div>
               </div>
-              <div style={{
-                ...styles.metricIcon,
-                backgroundColor: metric.bgColor,
-                color: metric.color,
-              }}>
-                <Icon size={24} />
-              </div>
-            </div>
+            ))}
           </div>
-        );
-      })}
-    </div>
-  );
 
-  const MapComponent = () => (
-    <div style={styles.mapSection}>
-      <div style={styles.sectionHeader}>
-        <MapPin size={20} />
-        Real-time Bin Monitoring
-      </div>
-      <MapContainer 
-        center={[13.0827, 80.2707]} 
-        zoom={11} 
-        style={styles.mapStyle}
-        key="main-map"
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="&copy; OpenStreetMap contributors"
-        />
-        {binsData.map((bin) => (
-          <Marker 
-            key={bin.id}
-            position={[bin.lat, bin.lng]}
-            icon={createCustomIcon(bin.status)}
-          >
-            <Popup>
-              <div style={{ textAlign: 'center', padding: '5px' }}>
-                <strong>{bin.location}</strong><br/>
-                Bin ID: {bin.id}<br/>
-                Fill Level: {bin.fillLevel}%<br/>
-                Status: <span style={{ 
-                  color: bin.status === 'Critical' ? '#dc2626' : 
-                         bin.status === 'High' ? '#ea580c' : '#16a34a',
-                  fontWeight: 'bold'
-                }}>{bin.status}</span>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-    </div>
-  );
-
-  const AlertsPanel = () => (
-    <div style={styles.alertsSection}>
-      <div style={styles.alertsCard}>
-        <div style={styles.sectionHeader}>
-          <Bell size={20} />
-          Priority Alerts
-        </div>
-        {alerts.map((alert, index) => (
-          <div key={index} style={{
-            ...styles.alertItem,
-            backgroundColor: alert.bgColor,
-          }}>
-            <div style={styles.alertContent}>
-              <div style={{
-                ...styles.alertIcon,
-                backgroundColor: alert.color,
-                color: "#ffffff",
-              }}>
-                <AlertTriangle size={16} />
-              </div>
-              <div>
-                <div style={styles.alertText}>{alert.text}</div>
-                <div style={{ fontSize: "0.8rem", color: "#64748b", marginTop: "0.25rem" }}>
-                  {alert.time}
+          {/* Map */}
+          <div style={{ backgroundColor: "#ffffff", padding: "2rem", borderRadius: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <h2 style={{ margin: 0, color: "#1e293b", fontSize: "1.5rem", fontWeight: "700" }}>Smart Bins Real-Time Map</h2>
+              <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <div style={{ width: "12px", height: "12px", backgroundColor: "#ef4444", borderRadius: "50%" }}></div>
+                  <span style={{ fontSize: "0.875rem", color: "#64748b" }}>Critical (95%+)</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <div style={{ width: "12px", height: "12px", backgroundColor: "#f59e0b", borderRadius: "50%" }}></div>
+                  <span style={{ fontSize: "0.875rem", color: "#64748b" }}>High (80-94%)</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <div style={{ width: "12px", height: "12px", backgroundColor: "#10b981", borderRadius: "50%" }}></div>
+                  <span style={{ fontSize: "0.875rem", color: "#64748b" }}>Normal (0-79%)</span>
                 </div>
               </div>
             </div>
-            <span style={{
-              ...styles.alertBadge,
-              backgroundColor: alert.color,
-            }}>
-              {alert.level}
-            </span>
-          </div>
-        ))}
-        <button 
-          style={styles.actionButton}
-          onClick={() => handleActionClick("View All Alerts")}
-          onMouseEnter={(e) => e.target.style.backgroundColor = "#047857"}
-          onMouseLeave={(e) => e.target.style.backgroundColor = "#059669"}
-        >
-          <AlertCircle size={16} />
-          View All Alerts
-        </button>
-      </div>
-
-      <div style={styles.alertsCard}>
-        <div style={styles.sectionHeader}>
-          <Leaf size={20} />
-          Environmental Impact
-        </div>
-        <div style={{ textAlign: "center", padding: "1rem 0" }}>
-          <div style={{ fontSize: "2rem", fontWeight: "700", color: "#16a34a", marginBottom: "0.5rem" }}>
-            2,847 kg
-          </div>
-          <div style={{ color: "#64748b", marginBottom: "1rem" }}>
-            Waste Diverted from Landfills Today
-          </div>
-          <div style={{ fontSize: "1.2rem", fontWeight: "600", color: "#059669", marginBottom: "1rem" }}>
-            15% Recycling Rate Improvement
-          </div>
-        </div>
-        <button 
-          style={styles.actionButton}
-          onClick={() => handleActionClick("Generate Environmental Report")}
-          onMouseEnter={(e) => e.target.style.backgroundColor = "#047857"}
-          onMouseLeave={(e) => e.target.style.backgroundColor = "#059669"}
-        >
-          <FileText size={16} />
-          Generate Report
-        </button>
-      </div>
-    </div>
-  );
-
-  const BinsManagement = ({ binsData }) => (
-    <div style={styles.alertsCard}>
-      <div style={styles.sectionHeader}>
-        <Trash2 size={20} />
-        Smart Bins Management
-      </div>
-      <div style={{ display: 'grid', gap: '1rem' }}>
-        {binsData.map((bin) => (
-          <div key={bin.id} style={{
-            ...styles.alertItem,
-            backgroundColor: bin.status === 'Critical' ? 'rgba(220, 38, 38, 0.1)' :
-                           bin.status === 'High' ? 'rgba(234, 88, 12, 0.1)' : 'rgba(22, 163, 74, 0.1)'
-          }}>
-            <div style={styles.alertContent}>
-              <div style={{
-                ...styles.alertIcon,
-                backgroundColor: bin.status === 'Critical' ? '#dc2626' :
-                               bin.status === 'High' ? '#ea580c' : '#16a34a',
-                color: '#ffffff'
-              }}>
-                <Trash2 size={16} />
-              </div>
-              <div>
-                <div style={styles.alertText}>
-                  Bin {bin.id} - {bin.location}
-                </div>
-                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                  Fill Level: {bin.fillLevel}%
-                </div>
-              </div>
-            </div>
-            <span style={{
-              ...styles.alertBadge,
-              backgroundColor: bin.status === 'Critical' ? '#dc2626' :
-                             bin.status === 'High' ? '#ea580c' : '#16a34a'
+            <div style={styles.mapContainer}>
+            <MapContainer
+  center={[13.0827, 80.2707]}
+  zoom={12}
+  scrollWheelZoom={true}
+  style={{ height: "100%", width: "100%" }}
+>
+  <TileLayer
+    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  />
+  {binsData.map((bin) => (
+    <Marker key={bin.id} position={[bin.lat, bin.lng]} icon={DustbinIcon}>
+      <Popup>
+        <div style={{ minWidth: "200px" }}>
+          <h4 style={{ margin: "0 0 8px 0", color: "#1e293b" }}>{bin.location}</h4>
+          <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>Bin ID:</strong> {bin.id}</p>
+          <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>Fill Level:</strong> {bin.fillLevel}%</p>
+          <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>Status:</strong> 
+            <span style={{ 
+              color: bin.status === "Critical" ? "#ef4444" : bin.status === "High" ? "#f59e0b" : "#10b981",
+              fontWeight: "600",
+              marginLeft: "4px"
             }}>
               {bin.status}
             </span>
-          </div>
-        ))}
-      </div>
-      <button 
-        style={styles.actionButton}
-        onClick={() => handleActionClick("Add New Bin")}
-        onMouseEnter={(e) => e.target.style.backgroundColor = "#047857"}
-        onMouseLeave={(e) => e.target.style.backgroundColor = "#059669"}
-      >
-        <Trash2 size={16} />
-        Add New Smart Bin
-      </button>
-    </div>
-  );
-
-  const RoutesManagement = ({ routesData }) => (
-    <div style={styles.alertsCard}>
-      <div style={styles.sectionHeader}>
-        <Route size={20} />
-        Collection Routes Management
-      </div>
-      <div style={{ display: 'grid', gap: '1rem' }}>
-        {routesData.map((route) => (
-          <div key={route.id} style={{
-            ...styles.alertItem,
-            backgroundColor: route.status === 'Delayed' ? 'rgba(234, 88, 12, 0.1)' :
-                           route.status === 'Maintenance' ? 'rgba(220, 38, 38, 0.1)' : 'rgba(22, 163, 74, 0.1)'
-          }}>
-            <div style={styles.alertContent}>
-              <div style={{
-                ...styles.alertIcon,
-                backgroundColor: route.status === 'Delayed' ? '#ea580c' :
-                               route.status === 'Maintenance' ? '#dc2626' : '#16a34a',
-                color: '#ffffff'
-              }}>
-                <Route size={16} />
-              </div>
-              <div>
-                <div style={styles.alertText}>
-                  {route.name}
-                </div>
-                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                  {route.bins} bins • Efficiency: {route.efficiency}
-                </div>
-              </div>
-            </div>
-            <span style={{
-              ...styles.alertBadge,
-              backgroundColor: route.status === 'Delayed' ? '#ea580c' :
-                             route.status === 'Maintenance' ? '#dc2626' : '#16a34a'
-            }}>
-              {route.status}
-            </span>
-          </div>
-        ))}
-      </div>
-      <button 
-        style={styles.actionButton}
-        onClick={() => handleActionClick("Optimize Routes")}
-        onMouseEnter={(e) => e.target.style.backgroundColor = "#047857"}
-        onMouseLeave={(e) => e.target.style.backgroundColor = "#059669"}
-      >
-        <Route size={16} />
-        Optimize All Routes
-      </button>
-    </div>
-  );
-
-  const AlertsManagement = ({ alerts }) => (
-    <div style={styles.alertsCard}>
-      <div style={styles.sectionHeader}>
-        <AlertCircle size={20} />
-        Critical Alerts Management
-      </div>
-      {alerts.map((alert, index) => (
-        <div key={index} style={{
-          ...styles.alertItem,
-          backgroundColor: alert.bgColor,
-        }}>
-          <div style={styles.alertContent}>
-            <div style={{
-              ...styles.alertIcon,
-              backgroundColor: alert.color,
-              color: "#ffffff",
-            }}>
-              <AlertTriangle size={16} />
-            </div>
-            <div>
-              <div style={styles.alertText}>{alert.text}</div>
-              <div style={{ fontSize: "0.8rem", color: "#64748b", marginTop: "0.25rem" }}>
-                {alert.time}
-              </div>
+          </p>
+          <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>Type:</strong> {bin.type}</p>
+          <p style={{ margin: "4px 0", fontSize: "14px" }}><strong>Last Collection:</strong> {bin.lastCollection}</p>
+        </div>
+      </Popup>
+    </Marker>
+  ))}
+</MapContainer>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <span style={{
-              ...styles.alertBadge,
-              backgroundColor: alert.color,
-            }}>
-              {alert.level}
-            </span>
-            <button 
-              style={{
-                padding: '0.25rem 0.75rem',
-                border: 'none',
-                borderRadius: '6px',
-                backgroundColor: '#059669',
-                color: '#ffffff',
-                cursor: 'pointer',
-                fontSize: '0.8rem'
-              }}
-              onClick={() => handleActionClick(`Resolve Alert ${index + 1}`)}
-            >
-              Resolve
-            </button>
-          </div>
         </div>
-      ))}
-      <button 
-        style={styles.actionButton}
-        onClick={() => handleActionClick("Clear All Alerts")}
-        onMouseEnter={(e) => e.target.style.backgroundColor = "#047857"}
-        onMouseLeave={(e) => e.target.style.backgroundColor = "#059669"}
-      >
-        <AlertCircle size={16} />
-        Clear All Resolved
-      </button>
-    </div>
-  );
-
-  const ReportsSection = () => (
-    <div style={styles.alertsCard}>
-      <div style={styles.sectionHeader}>
-        <FileText size={20} />
-        Environmental Impact Reports
-      </div>
-      <div style={{ display: 'grid', gap: '1.5rem', padding: '1rem' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#16a34a', marginBottom: '0.5rem' }}>
-            12,847 kg
-          </div>
-          <div style={{ color: '#64748b', marginBottom: '2rem' }}>
-            Total Waste Processed This Month
-          </div>
-        </div>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <div style={{ textAlign: 'center', padding: '1rem', backgroundColor: 'rgba(22, 163, 74, 0.1)', borderRadius: '12px' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: '600', color: '#16a34a' }}>2,847 kg</div>
-            <div style={{ fontSize: '0.9rem', color: '#64748b' }}>Recycled</div>
-          </div>
-          <div style={{ textAlign: 'center', padding: '1rem', backgroundColor: 'rgba(8, 145, 178, 0.1)', borderRadius: '12px' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: '600', color: '#0891b2' }}>4.2 T CO₂</div>
-            <div style={{ fontSize: '0.9rem', color: '#64748b' }}>Saved</div>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <button 
-            style={styles.actionButton}
-            onClick={() => handleActionClick("Generate Monthly Report")}
-            onMouseEnter={(e) => e.target.style.backgroundColor = "#047857"}
-            onMouseLeave={(e) => e.target.style.backgroundColor = "#059669"}
-          >
-            <FileText size={16} />
-            Generate Monthly Report
-          </button>
-          <button 
-            style={styles.actionButton}
-            onClick={() => handleActionClick("Export Data")}
-            onMouseEnter={(e) => e.target.style.backgroundColor = "#047857"}
-            onMouseLeave={(e) => e.target.style.backgroundColor = "#059669"}
-          >
-            <TrendingUp size={16} />
-            Export Performance Data
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Main content renderer
-  const renderMainContent = () => {
-    switch(activeTab) {
-      case "Smart Bins":
-        return <BinsManagement binsData={binsData} />;
-      case "Collection Routes":
-        return <RoutesManagement routesData={routesData} />;
-      case "Critical Alerts":
-        return <AlertsManagement alerts={alerts} />;
-      case "Environmental Reports":
-        return <ReportsSection />;
-      default:
-        return (
-          <>
-            <MetricsGrid />
-            <div style={styles.contentGrid}>
-              <MapComponent />
-              <AlertsPanel />
-            </div>
-          </>
-        );
+      );
     }
+
+    return (
+      <div style={{ 
+        backgroundColor: "#ffffff", 
+        padding: "4rem", 
+        borderRadius: "16px", 
+        boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+        textAlign: "center" 
+      }}>
+        <h2 style={{ color: "#1e293b", marginBottom: "1rem" }}>{activeTab}</h2>
+        <p style={{ color: "#64748b", fontSize: "1.1rem" }}>
+          {activeTab} functionality coming soon! This section will provide comprehensive insights and controls.
+        </p>
+        <div style={{ marginTop: "2rem", color: "#64748b" }}>
+          🚧 Under Development 🚧
+        </div>
+      </div>
+    );
   };
 
   return (
     <div style={styles.dashboardContainer}>
-      <Sidebar />
-      <div style={styles.dashboardMain}>
-        <Navbar />
-        {renderMainContent()}
-      </div>
+      {/* Easter Egg Modal */}
+      {showEasterEgg && (
+        <>
+          <div style={styles.overlay} onClick={() => setShowEasterEgg(false)} />
+          <div style={styles.easterEggModal}>
+            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>{getEasterEggContent().emoji}</div>
+            <h2 style={{ color: "#1e293b", marginBottom: "1rem" }}>{getEasterEggContent().title}</h2>
+            <p style={{ color: "#64748b", lineHeight: "1.6" }}>{getEasterEggContent().message}</p>
+            <button 
+              onClick={() => setShowEasterEgg(false)}
+              style={{
+                marginTop: "2rem",
+                padding: "0.75rem 2rem",
+                backgroundColor: "#047857",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: "600"
+              }}
+            >
+              Awesome! 🎉
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Konami Code Indicator */}
+      {showKonamiIndicator && (
+        <div style={styles.konamiIndicator}>
+          Konami progress: {konamiSequence.length}/10 ⬆️⬇️⬅️➡️
+        </div>
+      )}
+
+      {/* Sidebar */}
+      <aside style={styles.sidebar}>
+        <div style={styles.sidebarHeader} onClick={handleLogoClick}>
+          <Leaf size={28} /> GreenWaste Pro
+        </div>
+        {sidebarItems.map((item) => (
+          <div
+            key={item.label}
+            style={{
+              ...styles.sidebarItem,
+              ...(activeTab === item.label ? styles.sidebarItemActive : {}),
+            }}
+            onClick={() => setActiveTab(item.label)}
+          >
+            <item.icon size={20} /> {item.label}
+          </div>
+        ))}
+        
+        {/* Pro badge at bottom */}
+        <div style={{ 
+          marginTop: "auto", 
+          padding: "1rem", 
+          backgroundColor: "rgba(255,255,255,0.1)", 
+          borderRadius: "10px",
+          textAlign: "center",
+          fontSize: "0.875rem"
+        }}>
+          <Award size={16} style={{ marginBottom: "0.5rem" }} />
+          <div>Professional Edition</div>
+          <div style={{ opacity: 0.8, fontSize: "0.75rem" }}>v2.1.3</div>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main style={styles.mainContent}>
+        <div style={styles.navbar}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <h1 style={{ margin: 0, color: "#1e293b", fontSize: "1.5rem", fontWeight: "700" }}>
+              {activeTab} Overview
+            </h1>
+            <div style={{ 
+              backgroundColor: "#10b98115", 
+              color: "#10b981", 
+              padding: "0.25rem 0.75rem", 
+              borderRadius: "20px", 
+              fontSize: "0.875rem",
+              fontWeight: "600"
+            }}>
+              Live
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <Calendar size={16} color="#64748b" />
+              <span style={{ color: "#64748b", fontSize: "0.9rem" }}>
+                {currentTime.toLocaleDateString()}
+              </span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", position: "relative" }}>
+              <Bell size={18} color="#64748b" />
+              <span style={{ color: "#64748b", fontSize: "0.9rem" }}>
+                {notifications} alerts
+              </span>
+              {notifications > 0 && (
+                <div style={{
+                  position: "absolute",
+                  top: "-4px",
+                  right: "45px",
+                  width: "8px",
+                  height: "8px",
+                  backgroundColor: "#ef4444",
+                  borderRadius: "50%"
+                }} />
+              )}
+            </div>
+            <div style={{ color: "#64748b", fontSize: "0.9rem", fontWeight: "600" }}>
+              {currentTime.toLocaleTimeString()}
+            </div>
+            <LogOut size={18} style={{ cursor: "pointer", color: "#64748b" }} />
+          </div>
+        </div>
+        {renderContent()}
+      </main>
     </div>
   );
 };

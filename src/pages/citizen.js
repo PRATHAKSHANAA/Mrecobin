@@ -119,8 +119,11 @@ const CitizenPage = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [binsData] = useState([
-    { id: "C1", location: "Marina Beach", fillLevel: 80, status: "Full", lat: 13.0827, lng: 80.2707 },
-    { id: "C2", location: "Adyar", fillLevel: 40, status: "Medium", lat: 13.0569, lng: 80.2462 },
+    { id: "C1", location: "Mandapam Road", fillLevel: 80, status: "Full", lat:13.086696450824595, lng:80.23396748061305},
+    { id: "C2", location: "Outer Ring Road", fillLevel: 40, status: "Medium", lat:13.085078102330876, lng:80.23040816062182},
+    { id: "C3", location: "Raji Street", fillLevel: 20, status: "Available", lat:13.090782287550095, lng:80.23173070794498},
+    { id: "C4", location: "Velachery", fillLevel: 55, status: "Medium", lat: 12.9792, lng: 80.2210 },
+    { id: "C5", location: "Palli Arasan Street", fillLevel: 90, status: "Full", lat:13.087794089939603, lng:80.23123969445336},
   ]);
 
   useEffect(() => {
@@ -139,8 +142,12 @@ const CitizenPage = () => {
   const createCustomIcon = (status) => {
     const color = status === "Full" ? "#dc2626" : status === "Medium" ? "#facc15" : "#16a34a";
     return L.divIcon({
-      html: `<div style="background-color:${color};width:20px;height:20px;border-radius:50%;border:2px solid white;"></div>`,
-      iconSize: [20, 20],
+      className: "custom-bin-icon",
+      html: `<div style="display:flex;justify-content:center;align-items:center;width:28px;height:28px;border-radius:50%;background:${color};box-shadow:0 0 4px rgba(0,0,0,0.3);">
+               🗑️
+             </div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
     });
   };
 

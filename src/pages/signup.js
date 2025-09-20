@@ -32,6 +32,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../App.css";
 
 const Signup = () => {
   const [role, setRole] = useState("citizen");

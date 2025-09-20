@@ -140,16 +140,19 @@ const CitizenPage = () => {
   };
 
   const createCustomIcon = (status) => {
-    const color = status === "Full" ? "#dc2626" : status === "Medium" ? "#facc15" : "#16a34a";
-    return L.divIcon({
-      className: "custom-bin-icon",
-      html: `<div style="display:flex;justify-content:center;align-items:center;width:28px;height:28px;border-radius:50%;background:${color};box-shadow:0 0 4px rgba(0,0,0,0.3);">
-               🗑️
-             </div>`,
-      iconSize: [28, 28],
-      iconAnchor: [14, 14],
+    let iconUrl = "/greenbin.png"; // default
+  
+    if (status === "Full") iconUrl = "/greenbin.png";
+    else if (status === "Medium") iconUrl = "/greenbin.png";
+  
+    return new L.Icon({
+      iconUrl,
+      iconSize: [60, 60],  // adjust based on your image resolution
+      iconAnchor: [30, 60], // center bottom of the image
+      popupAnchor: [0, -60], // popup appears just above the icon
     });
   };
+  
 
   return (
     <div style={styles.container}>

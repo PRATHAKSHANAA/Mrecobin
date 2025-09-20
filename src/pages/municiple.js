@@ -201,7 +201,7 @@ const Dashboard = () => {
   
   const binsData = [
     { 
-      id: "A247", 
+      id: "C1", 
       location: "outer ring road", 
       fillLevel: 95, 
       status: "Critical", 
@@ -211,7 +211,7 @@ const Dashboard = () => {
       type: "Mixed Waste"
     },
     { 
-      id: "B156", 
+      id: "C2", 
       location: "Mandapam Road", 
       fillLevel: 72, 
       status: "Normal", 
@@ -220,7 +220,7 @@ const Dashboard = () => {
       type: "Recyclables"
     },
     { 
-      id: "C089", 
+      id: "C3", 
       location: "Raji Street", 
       fillLevel: 60, 
       status: "Normal", 
@@ -229,7 +229,7 @@ const Dashboard = () => {
       type: "Organic Waste"
     },
     { 
-      id: "D123", 
+      id: "C5", 
       location: "Palli Arasan Street", 
       fillLevel: 88, 
       status: "High", 
